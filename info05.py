@@ -25,6 +25,7 @@ pseudo="Gaston" #provisory pseudo for user
 exercise="INFO05"
 nbtrials=0 #number of total trials
 nbsuccess=0 #number of successfull trials
+entry_pseudo = None
 
 #exercise data
 rgb=[100,150,200]  #random color as list
@@ -191,8 +192,21 @@ def sl_v(event):
 
 
 def save_game(event):
-    print("dans save")
-    #TODO
+    global pseudo, entry_pseudo
+    if entry_pseudo is not None:
+        pseudo = entry_pseudo.get().strip() or "Anonyme"
+    else:
+        pseudo = pseudo or "Anonyme"
+
+    elapsed_seconds = int((datetime.datetime.now() - start_date).total_seconds())
+    try:
+        database.save_result(exercise, pseudo, nbtrials, nbsuccess, elapsed_seconds)
+        from tkinter.messagebox import showinfo
+        showinfo("Enregistrement", f"Résultat enregistré pour {pseudo}.")
+    except Exception as exc:
+        from tkinter.messagebox import showerror
+        showerror("Erreur", f"Impossible d'enregistrer le résultat : {exc}")
+    window_info05.destroy()
 
 
 def display_timer():
@@ -204,7 +218,7 @@ def display_timer():
 
 
 def open_window_info_05(window):
-    global window_info05, lbl_duration, lbl_result, hex_color, start_date, slider_r, slider_g, slider_b, slider_v, entry_response, canvas
+    global window_info05, lbl_duration, lbl_result, hex_color, start_date, slider_r, slider_g, slider_b, slider_v, entry_response, canvas, entry_pseudo
     window_info05 = tk.Toplevel(window)
     window_info05.title("La couleur perdue")
     window_info05.geometry("1100x900")
@@ -224,6 +238,8 @@ def open_window_info_05(window):
     tk.Label(window_info05, text='Pseudo:', font=("Arial", 15)).grid(row=1, column=0, padx=5, pady=5, sticky='E')
     entry_pseudo = tk.Entry(window_info05, font=("Arial", 15))
     entry_pseudo.grid(row=1, column=1,sticky='W')
+    if pseudo:
+        entry_pseudo.insert(0, pseudo)
 
     lbl_result = tk.Label(window_info05, text=f"Essais réussis : 0/0", font=("Arial", 15))
     lbl_result.grid( row=1, column=2, ipady=5, padx=20,pady=10)

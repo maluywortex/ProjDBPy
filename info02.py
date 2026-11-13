@@ -15,6 +15,7 @@ pseudo="Gaston" #provisory pseudo for user
 exercise="INFO02"
 nbtrials=0 #number of total trials
 nbsuccess=0 #number of successfull trials
+entry_pseudo = None
 
 # Liaison entre le canvas et le code
 unite = ["B", "kB", "MB", "GB", "TB"]
@@ -47,8 +48,21 @@ def next(event):
 
 
 def save_game(event):
-    print("dans save")
-    # TODO
+    global pseudo, entry_pseudo
+    if entry_pseudo is not None:
+        pseudo = entry_pseudo.get().strip() or "Anonyme"
+    else:
+        pseudo = pseudo or "Anonyme"
+
+    elapsed_seconds = int((datetime.datetime.now() - start_date).total_seconds())
+    try:
+        database.save_result(exercise, pseudo, nbtrials, nbsuccess, elapsed_seconds)
+        from tkinter.messagebox import showinfo
+        showinfo("Enregistrement", f"Résultat enregistré pour {pseudo}.")
+    except Exception as exc:
+        from tkinter.messagebox import showerror
+        showerror("Erreur", f"Impossible d'enregistrer le résultat : {exc}")
+    window_info02.destroy()
 
 
 def test(event):
@@ -77,7 +91,7 @@ def display_timer():
 
 
 def open_window_info_02(window):
-    global window_info02, lbl_duration, lbl_result, entry_n2, label_u2, label_n1, hex_color, start_date
+    global window_info02, lbl_duration, lbl_result, entry_n2, label_u2, label_n1, hex_color, start_date, entry_pseudo
     window_info02 = tk.Toplevel(window)
 
     #window_info02 = tk.Tk()
@@ -99,6 +113,8 @@ def open_window_info_02(window):
     entry_pseudo = tk.Entry(window_info02, font=("Arial", 15))
     # entry_pseudo.pack(ipadx=2, ipady=10, padx=5,pady=5)
     entry_pseudo.grid(row=1, column=1)
+    if pseudo:
+        entry_pseudo.insert(0, pseudo)
 
     lbl_result = tk.Label(window_info02, text=f"{pseudo}  Essais réussis : 0/0", font=("Arial", 15))
     lbl_result.grid( row=1, column=2,columnspan=3, ipady=5, padx=20,pady=20)

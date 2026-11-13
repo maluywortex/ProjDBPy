@@ -18,6 +18,7 @@ target_x = 10 # x & y to find
 target_y = 10
 scale = 47.5 #100 pixels for x=1
 mycircle= None #objet utilisé pour le cercle rouge
+entry_pseudo = None
 
 
 #important data (to save)
@@ -88,8 +89,21 @@ def next_point(event):
 
 
 def save_game(event):
-    # TODO
-    print("dans save")
+    global pseudo, entry_pseudo
+    if entry_pseudo is not None:
+        pseudo = entry_pseudo.get().strip() or "Anonyme"
+    else:
+        pseudo = pseudo or "Anonyme"
+
+    elapsed_seconds = int((datetime.datetime.now() - start_date).total_seconds())
+    try:
+        database.save_result(exercise, pseudo, nbtrials, nbsuccess, elapsed_seconds)
+        from tkinter.messagebox import showinfo
+        showinfo("Enregistrement", f"Résultat enregistré pour {pseudo}.")
+    except Exception as exc:
+        from tkinter.messagebox import showerror
+        showerror("Erreur", f"Impossible d'enregistrer le résultat : {exc}")
+    window_geo01.destroy()
 
 
 def display_timer():
@@ -102,7 +116,7 @@ def display_timer():
 
 def open_window_geo_01(window):
     # window = tk.Tk()
-    global window_geo01, hex_color, lbl_title, lbl_duration, lbl_result, lbl_target, canvas, start_date
+    global window_geo01, hex_color, lbl_title, lbl_duration, lbl_result, lbl_target, canvas, start_date, entry_pseudo
     window_geo01 = tk.Toplevel(window)
 
     window_geo01.title("Exercice de géométrie")
@@ -123,6 +137,8 @@ def open_window_geo_01(window):
     tk.Label(window_geo01, text='Pseudo:', font=("Arial", 15)).grid(row=1, column=0, padx=5, pady=5)
     entry_pseudo = tk.Entry(window_geo01, font=("Arial", 15))
     entry_pseudo.grid(row=1, column=1)
+    if pseudo:
+        entry_pseudo.insert(0, pseudo)
 
     lbl_result = tk.Label(window_geo01, text=f"Essais réussis : 0/0", font=("Arial", 15))
     lbl_result.grid(row=1, column=3, padx=5, pady=5, columnspan=4)
